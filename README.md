@@ -1,1 +1,2 @@
-# Raquel-Project1
+# Revagenda
+The Revagenda App - by popular demand
