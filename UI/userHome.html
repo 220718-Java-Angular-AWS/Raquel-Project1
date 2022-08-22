@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- This is boilerplate HTML header stuff -->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" href="style.css">-->
+    <title>Employee Home</title>
+</head>
+
+<body onload = "showRequests()">
+    <h2>How can I help you today?</h2>
+    <h2>Please select the option below</h2>
+    <button class='btn' type="button" onclick="changeMeUp()">Edit Profile</button> <div id="profile"></div>
+    <button class='btn' type="button" onclick="newRequest()" >Create Request</button> 
+    <input type="text"type="number" onkeypress="return event.charCode >= 48 && event.charCode <= 57" id="EditID" placeholder="Request ID Here For Editing" value="0"> <button class='btn' type="button" onclick="editReq()" >Edit Request</button>
+   <br><input type="text"type="number" onkeypress="return event.charCode >= 48 && event.charCode <= 57" id="DeleteID" placeholder="Request ID Here For Deletion" value="0"> <button class='btn' type="button" onclick="deleteIt()" >Delete Request</button>
+     <br> <br>
+    <div id="adminControls"></div>
+    <br>
+    <div id="requestList" ></div>
+</body >
+
+<script>
+let htmlElement=document.getElementById('adminControls')
+if(window.sessionStorage.getItem('admin')== "true"){
+    htmlElement.innerHTML += "<h3>Special Admin Controls</h3> <h5>*USE AT OWN RISK*</h5>"
+    htmlElement.innerHTML += "<button  class='btn' type='button' onclick='location.href=&quot;viewUsers.html&quot;'>View and Update User Status</button> <button  class='btn' type='button' onclick='location.href=&quot;approveRequests.html&quot;'>Approve/Deny Requests</button>"
+
+htmlElement.innerHTML +=" <br> <br> Sort Requests by <select class='select' name='status' id='status' ><optgroup label='Sort by'><option value=' '>Nothing!</option><option value='Pending'>Pending!</option><option value='Approved'>Approved!</option><option value='Denied'>Denied!</option></optgroup></select> <button class='btn' type='button' onclick='showRequests()' >View Sorted Requests</button>"
+
+
+}
+
+
+async function changeMeUp(){
+
+let htmlElement=document.getElementById('profile')
+let url = 'http://localhost:8080/Raquel-Project1/users?user-id='+ window.sessionStorage.getItem('userID')
+
+    let response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            }
+        });
+    let user = await response.json()
+
+    htmlElement.innerHTML += "<h4>User ID: "+user.userId
+    htmlElement.innerHTML += "<p>First Name: $<input type='text' id = 'fName' value = '"+user.firstName+"'> </p>"
+    htmlElement.innerHTML += "<p>Last Name: $<input type='text' id = 'lName' value = '"+user.lastName+"'> </p>"
+    htmlElement.innerHTML += "<p>Email: $<input type='text' id = 'email' value = '"+user.email+"'> </p>"
+    htmlElement.innerHTML += "<p>First Name: $<input type='text' id = 'password' value = '"+user.password+"'> </p>"
+    htmlElement.innerHTML += "<p>Admin Status: "+ user.admin+"</p>"
+    htmlElement.innerHTML += "<button class='btn' type= 'button' onclick='updateUser()'>New Click New Me (save profile)</button>   <button class='btn' type= 'button' onclick='location.href=&quot;userHome.html&quot;'>I Am Happy As I Am. (cancel)</button> <br> <br> "
+    
+
+}
+
+async function updateUser(){
+let admist = null
+if(window.sessionStorage.getItem('admin') == "true"){
+    admist = true
+}else{admist = false}
+
+
+   let used = {
+            'userId': window.sessionStorage.getItem('userID'),
+            'firstName': document.getElementById("fName").value,
+            'lastName': document.getElementById("lName").value,
+            "email": document.getElementById("email").value,
+            "password": document.getElementById("password").value,
+            "admin": admist
+        }
+        let urls = 'http://localhost:8080/Raquel-Project1/users'
+    let responsed = await fetch(urls, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(used)
+        });
+
+    if(responsed.status==200){
+        alert("Your identity has changed"+document.getElementById("fName").value)
+    }  
+}
+
+
+    async function showRequests() {
+        let url = 'http://localhost:8080/Raquel-Project1/Request?user-id='+window.sessionStorage.getItem('userID')
+    
+    let response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            }
+        });
+        let array = await response.json();
+        let htmlElement = document.getElementById('requestList');
+//get the element where we will place our content
+htmlElement.innerHTML = ' '
+
+if(sessionStorage.getItem('admin')== "true"){
+let sorting = document.getElementById('status').value
+
+if(sorting == " "){
+//This is just looping through an array, exactly the same as Java
+for (let i = 0; i < array.length; i++) {
+    let req = array[i];
+
+
+    //insert into the web page the data
+    htmlElement.innerHTML += "<h4>Request ID: " + req.reqId + "</h4>"
+    
+    htmlElement.innerHTML += "<h4>Reason: " + req.reason + "</h4>"
+    htmlElement.innerHTML += "<h4>Comment: " + req.comment + "</h4>"
+    htmlElement.innerHTML += "<p>Amount: $" + req.amount + "</p>"
+    htmlElement.innerHTML += "<p>Status: "+ req.approved+"</p><br><br>"
+
+    
+    
+
+}}else{
+    for (let i = 0; i < array.length; i++) {
+    let req = array[i];
+
+if(sorting == req.approved){
+    //insert into the web page the data
+    htmlElement.innerHTML += "<h4>Request ID: " + req.reqId + "</h4>"
+    
+    htmlElement.innerHTML += "<h4>Reason: " + req.reason + "</h4>"
+    htmlElement.innerHTML += "<h4>Comment: " + req.comment + "</h4>"
+    htmlElement.innerHTML += "<p>Amount: $" + req.amount + "</p>"
+    htmlElement.innerHTML += "<p>Status: "+ req.approved+"</p><br><br>"}
+}
+
+
+    
+}}else{ for (let i = 0; i < array.length; i++) {
+    let req = array[i];
+
+
+    //insert into the web page the data
+    htmlElement.innerHTML += "<h4>Request ID: " + req.reqId + "</h4>"
+    
+    htmlElement.innerHTML += "<h4>Reason: " + req.reason + "</h4>"
+    htmlElement.innerHTML += "<h4>Comment: " + req.comment + "</h4>"
+    htmlElement.innerHTML += "<p>Amount: $" + req.amount + "</p>"
+    htmlElement.innerHTML += "<p>Status: "+ req.approved+"</p><br><br>"
+
+}
+
+
+
+}}
+
+
+async function deleteIt(){
+
+    
+    let url =  'http://localhost:8080/Raquel-Project1/Request?req-id=' + document.getElementById('DeleteID').value
+
+    let response = await fetch(url,{
+        method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            }
+    });
+    if(response.approved == "Approved"){
+        alert("cant get rid of your request for money After we've paid you buddy.")
+    }else{ 
+
+
+    
+let durl ='http://localhost:8080/Raquel-Project1/Request?req-id=' + document.getElementById('DeleteID').value
+let reqponse = await fetch(durl, {
+    method: 'DELETE',
+    headers:{'Content-Type': 'application/json;charset=utf-8'},
+})
+if(reqponse.status == 200){
+    alert("No more money for you! Request deleted!");
+    location.href = 'userHome.html'
+}else{alert("This was probably the easiest button and you still messed it up.")}
+}}
+
+async function editReq(){
+    let editID = document.getElementById('EditID').value
+    let url =  'http://localhost:8080/Raquel-Project1/Request?req-id=' + editID
+
+    let response = await fetch(url,{
+        method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            }
+    });
+let request= await response.json();
+
+window.sessionStorage.setItem('uID', request.userId)
+window.sessionStorage.setItem('app', request.approved)
+let theLink = "location.href=NewRequest.html"
+let htmlElement = document.getElementById('requestList');
+htmlElement.innerHTML = ' '
+
+    htmlElement.innerHTML += "<h4>Request ID: "+ request.reqId + "</h4>"
+    
+    htmlElement.innerHTML += "<h4>Reason: <select class='select' name='reason' id='reason' required><optgroup label='Reason for request'><option value='"+request.reason+"'>"+request.reason+"</option><option value='Mileage'>Mileage</option><option value='Rental'>Rental</option><option value='Meal'>Meal</option><option value='Airfare'>Airfare</option><option value='Purchase'>Purchase</option></optgroup></select>"
+    htmlElement.innerHTML += "<h4>Comment: <textarea type='text' rows='6' cols='100' id = 'comment' > " + request.comment + "</textarea></h4>"
+    htmlElement.innerHTML += "<p>Amount: $<input type='number' id = 'amount' value = '"+request.amount+"'> </p>"
+    htmlElement.innerHTML += "<p>Status: "+ request.approved+"</p>"
+    htmlElement.innerHTML += "<button class='btn' type= 'button' onclick='updateReq()'>All Good! ...Probably this time.</button>   <button class='btn' type= 'button' onclick='location.href=&quot;userHome.html&quot;'>NO! I DONT WANNA EDIT!!!!</button> "
+
+}
+async function updateReq(){
+
+let upRequest= {
+    reqId: document.getElementById('EditID').value,
+    userId: sessionStorage.getItem('uID'),
+    comment: document.getElementById('comment').value,
+    reason:  document.getElementById('reason').value,
+    amount:  document.getElementById('amount').value,
+    approved: sessionStorage.getItem('app')
+}
+console.log(upRequest)
+    let url =  'http://localhost:8080/Raquel-Project1/Request'
+
+    let response = await fetch(url,{
+        method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(upRequest)
+    });
+
+   if(response.status == 200){
+    location.href = 'userHome.html'
+   }
+
+}
+
+async function newRequest(){location.href='newRequest.html'}
+
+</script>
+
+</html>

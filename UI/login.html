@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- This is boilerplate HTML header stuff -->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" href="style.css">-->
+    <title>Welcome to the Employee Reimbursement</title>
+</head>
+
+
+<body>
+    <h4>Welcome to the Employee Reimbursement!</h4>
+    <h2>Please Login to continue</h2>
+    Email: <input type="text" id="username" ><br>
+    Password: <input type="text" id="password"><br>
+    <button class='btn' type="button" onclick="logMeInCoach()" >Log In</button><br>
+
+
+</body>
+
+<script>
+async function logMeInCoach(){
+let USERNAME =document.getElementById('username').value
+let PASSWORD = document.getElementById('password').value
+console.log(USERNAME)
+console.log(PASSWORD)
+let url ='http://localhost:8080/Raquel-Project1/HomeLogin?USERNAME='+ USERNAME+'&PASSWORD='+PASSWORD;
+let response = await fetch(url,
+{
+            method: 'GET',
+            headers:{
+                'Content-Type': 'application/json;charset=utf-8'
+            }
+        });
+
+let user = await response.json();
+console.log(user)
+
+if(user.user_id != null){
+    window.sessionStorage.setItem('user_id', user.user_id)
+
+    sessionStorage.setItem('admin', user.admin);
+
+
+    alert("Welcome " +user.firstname +" " + user.lastname+ "!")
+
+
+    location.href='userHome.html'
+
+}else{alert("You have successfully login.")}
+
+
+
+}
+
+
+</script>
+
+</html>
